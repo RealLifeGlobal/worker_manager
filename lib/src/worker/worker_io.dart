@@ -110,9 +110,9 @@ class WorkerImpl implements Worker {
           canceled = true;
           throw CanceledError();
         }
-        if(!canceled){
+        if (!canceled) {
           sendPort.send(ResultSuccess(result));
-        } 
+        }
       } catch (error, stackTrace) {
         sendPort.send(ResultError(error, stackTrace));
       }

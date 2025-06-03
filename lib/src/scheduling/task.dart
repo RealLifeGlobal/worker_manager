@@ -41,15 +41,15 @@ abstract class Task<R> implements Comparable<Task<R>> {
   bool get canceled => _canceled;
 
   void cancel() {
-    if(!completer.isCompleted){
+    if (!completer.isCompleted) {
       _canceled = true;
       completer.completeError(CanceledError());
     }
   }
 
-  void complete(R? value, Object? error, StackTrace? st){
-    if(completer.isCompleted) return;
-    if(error != null){
+  void complete(R? value, Object? error, StackTrace? st) {
+    if (completer.isCompleted) return;
+    if (error != null) {
       completer.completeError(error, st);
       return;
     }

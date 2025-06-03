@@ -63,18 +63,19 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
     );
 
     Future<void> run() async {
-      try{
+      try {
         final result = await execution(() => task.canceled);
         task.complete(result, null, null);
-      }catch (error, st){
+      } catch (error, st) {
         task.complete(null, error, st);
       }
     }
+
     run();
     return Cancelable(
-        completer: task.completer,
-        onCancel: () => _cancel(task),
-      );
+      completer: task.completer,
+      onCancel: () => _cancel(task),
+    );
   }
 
   Cancelable<R> executeWithPort<R, T>(
@@ -227,7 +228,8 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
   void _cancel(Task task) {
     task.cancel();
     _queue.remove(task);
-    final targetWorker = _pool.firstWhereOrNull((worker) => worker.taskId == task.id);
+    final targetWorker =
+        _pool.firstWhereOrNull((worker) => worker.taskId == task.id);
     if (task is Gentle) {
       targetWorker?.cancelGentle();
     } else {
