@@ -1,5 +1,5 @@
 name: worker_manager
-version: 7.2.6
+version: 7.2.7
 description: The worker_manager allows you to manage CPU-intensive calculations across isolates
 homepage: "https://github.com/dsrenesanse/worker_manager"
 repository: "https://github.com/dsrenesanse/worker_manager"
