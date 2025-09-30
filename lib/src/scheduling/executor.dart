@@ -48,10 +48,7 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
     Execute<R> execution, {
     WorkPriority priority = WorkPriority.immediately,
   }) {
-    return _createCancelable<R>(
-      execution: execution,
-      priority: priority,
-    );
+    return _createCancelable<R>(execution: execution, priority: priority);
   }
 
   Cancelable<R> executeNow<R>(ExecuteGentle<R> execution) {
@@ -72,10 +69,7 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
     }
 
     run();
-    return Cancelable(
-      completer: task.completer,
-      onCancel: () => _cancel(task),
-    );
+    return Cancelable(completer: task.completer, onCancel: () => _cancel(task));
   }
 
   Cancelable<R> executeWithPort<R, T>(
@@ -94,10 +88,7 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
     ExecuteGentle<R> execution, {
     WorkPriority priority = WorkPriority.immediately,
   }) {
-    return _createCancelable<R>(
-      execution: execution,
-      priority: priority,
-    );
+    return _createCancelable<R>(execution: execution, priority: priority);
   }
 
   Cancelable<R> executeGentleWithPort<R, T>(
@@ -134,14 +125,7 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
     _nextTaskId++;
     late final Task<R> task;
     final completer = Completer<R>();
-    if (execution is Execute<R>) {
-      task = TaskRegular<R>(
-        id: id,
-        workPriority: priority,
-        execution: execution,
-        completer: completer,
-      );
-    } else if (execution is ExecuteWithPort<R>) {
+    if (execution is ExecuteWithPort<R>) {
       task = TaskWithPort<R>(
         id: id,
         workPriority: priority,
@@ -164,14 +148,18 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
         completer: completer,
         onMessage: onMessage!,
       );
+    } else if (execution is Execute<R>) {
+      task = TaskRegular<R>(
+        id: id,
+        workPriority: priority,
+        execution: execution,
+        completer: completer,
+      );
     }
     _queue.add(task);
     _schedule();
     logTaskAdded(task.id);
-    return Cancelable(
-      completer: task.completer,
-      onCancel: () => _cancel(task),
-    );
+    return Cancelable(completer: task.completer, onCancel: () => _cancel(task));
   }
 
   Future<void> _ensureWorkersInitialized() async {
@@ -212,24 +200,31 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
     if (_queue.isEmpty) return;
     final task = _queue.removeFirst();
 
-    availableWorker.work(task).then((value) {
-      //could be completed already by cancel and it is normal.
-      //Assuming that worker finished with error and cleaned gracefully
-      task.complete(value, null, null);
-    }, onError: (error, st) {
-      task.complete(null, error, st);
-    }).whenComplete(() {
-      if (_dynamicSpawning && _queue.isEmpty) availableWorker.kill();
-      _schedule();
-    });
+    availableWorker
+        .work(task)
+        .then(
+          (value) {
+            //might be completed by cancel and it is normal.
+            //Assuming that worker finished with error and cleaned gracefully
+            task.complete(value, null, null);
+          },
+          onError: (error, st) {
+            task.complete(null, error, st);
+          },
+        )
+        .whenComplete(() {
+          if (_dynamicSpawning && _queue.isEmpty) availableWorker.kill();
+          _schedule();
+        });
   }
 
   @override
   void _cancel(Task task) {
     task.cancel();
     _queue.remove(task);
-    final targetWorker =
-        _pool.firstWhereOrNull((worker) => worker.taskId == task.id);
+    final targetWorker = _pool.firstWhereOrNull(
+      (worker) => worker.taskId == task.id,
+    );
     if (task is Gentle) {
       targetWorker?.cancelGentle();
     } else {

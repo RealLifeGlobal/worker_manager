@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:worker_manager/src/scheduling/task.dart';
 import 'package:worker_manager/src/worker/worker.dart';
 
+import '../../worker_manager.dart';
+
 class WorkerImpl implements Worker {
   WorkerImpl();
 
@@ -20,14 +22,14 @@ class WorkerImpl implements Worker {
 
   @override
   Future<R> work<R>(Task<R> task) async {
-    Future<R> run() async {
-      return await task.execution();
-    }
-
     taskId = task.id;
+    late var run = () async => task.execution();
     if (task is TaskWithPort) {
       onMessage = (task as TaskWithPort).onMessage;
+    } else if (task is TaskGentle) {
+      run = () async => await task.execution(() => task.canceled);
     }
+
     final resultValue = await run().whenComplete(() {
       _cleanUp();
     });

@@ -68,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 CupertinoButton(
                   child: Text('run compute'),
                   onPressed: () {
-                    for (var i = 0; i < 1; i++) {
+                    for (var i = 0; i < 20; i++) {
                       compute(fibCompute, 43).then((value) {
                         setState(() {
                           computeResults.add(value);
@@ -82,7 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Text('run executor'),
                   onPressed: () {
                     for (var i = 0; i < 1; i++) {
-                      workerManager.execute(() => fib(43)).then((value) {
+                      workerManager.executeGentle((s) => fib(43)).then((value) {
                         setState(() {
                           executorResults.add(value);
                         });
