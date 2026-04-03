@@ -197,7 +197,10 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
       _ensureWorkersInitialized();
       return;
     }
-    if (_queue.isEmpty) return;
+    if (_queue.isEmpty) {
+      if (_dynamicSpawning) availableWorker.kill();
+      return;
+    }
     final task = _queue.removeFirst();
 
     availableWorker
