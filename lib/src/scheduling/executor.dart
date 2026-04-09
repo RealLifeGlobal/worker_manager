@@ -13,6 +13,9 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
   var _dynamicSpawning = false;
   var _isolatesCount = numberOfProcessors;
 
+  @visibleForTesting
+  List<Worker> get pool => List.unmodifiable(_pool);
+
   @override
   Future<void> init({int? isolatesCount, bool? dynamicSpawning}) async {
     if (_pool.isNotEmpty) {
@@ -38,7 +41,9 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
   Future<void> dispose() async {
     _queue.clear();
     for (final worker in _pool) {
-      worker.kill();
+      if (worker.taskId != null) {
+        worker.kill();
+      }
     }
     _pool.clear();
     super.dispose();
