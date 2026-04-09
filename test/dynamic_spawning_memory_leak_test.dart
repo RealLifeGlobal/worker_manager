@@ -10,6 +10,7 @@ void main() {
       () async {
     await workerManager.init(dynamicSpawning: true);
 
+    expect(workerManager.pool.isNotEmpty, isTrue);
     expect(
       workerManager.pool.every((w) => !w.initialized),
       isTrue,
