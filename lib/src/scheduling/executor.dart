@@ -41,7 +41,7 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
   Future<void> dispose() async {
     _queue.clear();
     for (final worker in _pool) {
-      if (worker.taskId != null) {
+      if (worker.initialized) {
         worker.kill();
       }
     }
