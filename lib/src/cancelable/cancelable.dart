@@ -17,7 +17,11 @@ class Cancelable<R> implements Future<R> {
   factory Cancelable.fromFuture(Future<R> future) {
     final completer = Completer<R>();
     future.then(
-      (value) => completer.complete(value),
+      (value) {
+        if (!completer.isCompleted) {
+          completer.complete(value);
+        }
+      },
       onError: (Object e, StackTrace s) {
         _completeError(completer: completer, error: e, stackTrace: s);
       },
@@ -38,6 +42,7 @@ class Cancelable<R> implements Future<R> {
     StackTrace? stackTrace,
     FutureOr<T> Function(Object error)? onError,
   }) {
+    if (completer.isCompleted) return;
     if (onError != null) {
       completer.complete(onError(error));
     } else {
@@ -56,6 +61,7 @@ class Cancelable<R> implements Future<R> {
       [FutureOr<T> Function(Object error)? onError]) {
     final resultCompleter = Completer<T>();
     _completer.future.then((value) {
+      if (resultCompleter.isCompleted) return;
       try {
         resultCompleter.complete(onValue(value));
       } catch (error) {
@@ -84,7 +90,9 @@ class Cancelable<R> implements Future<R> {
   ) {
     final resultCompleter = Completer<Iterable<T>>();
     Future.wait(cancelables).then((value) {
-      resultCompleter.complete(value);
+      if (!resultCompleter.isCompleted) {
+        resultCompleter.complete(value);
+      }
     }, onError: (Object error) {
       _completeError(
         completer: resultCompleter,
